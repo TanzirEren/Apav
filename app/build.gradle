@@ -1,6 +1,7 @@
 plugins { id 'com.android.application' }
 
 def ks = file('release.jks')   // GitHub Action secret থেকে তৈরি হয়
+def envv = { String k -> (System.getenv(k) ?: '').trim() }
 
 android {
     namespace 'com.tanzirdev.apav'
@@ -13,15 +14,15 @@ android {
         versionName '1.0.0'
     }
     signingConfigs {
-        shared {
-            if (ks.exists()) {
-                storeFile ks
-                storePassword System.getenv('KEYSTORE_PASSWORD')
-                keyAlias System.getenv('KEY_ALIAS')
-                keyPassword System.getenv('KEY_PASSWORD')
-            }
+    shared {
+        if (ks.exists()) {
+            storeFile ks
+            storePassword envv('KEYSTORE_PASSWORD')
+            keyAlias envv('KEY_ALIAS')
+            keyPassword envv('KEY_PASSWORD') ?: envv('KEYSTORE_PASSWORD')
         }
     }
+}
     buildTypes {
         debug   { if (ks.exists()) signingConfig signingConfigs.shared }
         release { minifyEnabled false; if (ks.exists()) signingConfig signingConfigs.shared }
