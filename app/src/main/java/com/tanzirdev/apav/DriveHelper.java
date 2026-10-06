@@ -1,19 +1,20 @@
 package com.tanzirdev.apav;
+
 import android.content.Context;
+import com.google.android.gms.auth.GoogleAuthUtil;
 import com.google.android.gms.auth.api.signin.*;
 import com.google.android.gms.common.api.Scope;
-import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
-import com.google.api.client.http.ByteArrayContent;
-import com.google.api.client.json.gson.GsonFactory;
-import com.google.api.services.drive.Drive;
-import com.google.api.services.drive.DriveScopes;
-import java.io.ByteArrayOutputStream;
-import java.util.*;
+import java.util.List;
+import okhttp3.*;
 import org.json.*;
 
+/** Google Drive REST API (appDataFolder) সরাসরি OkHttp দিয়ে — কোনো বাড়তি Drive library লাগে না। */
 public class DriveHelper {
-    static final String SCOPE = DriveScopes.DRIVE_APPDATA;   // শুধু অ্যাপের লুকানো ফোল্ডার
+    static final String SCOPE = "https://www.googleapis.com/auth/drive.appdata";
     static final String FILE = "apav_backup.json";
+    static final String API = "https://www.googleapis.com/drive/v3/files";
+    static final String UPLOAD = "https://www.googleapis.com/upload/drive/v3/files";
+    static final MediaType JSON = MediaType.parse("application/json; charset=UTF-8");
 
     public static GoogleSignInClient client(Context c) {
         GoogleSignInOptions o = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -24,15 +25,21 @@ public class DriveHelper {
         GoogleSignInAccount a = GoogleSignIn.getLastSignedInAccount(c);
         return (a != null && GoogleSignIn.hasPermissions(a, new Scope(SCOPE))) ? a : null;
     }
-    static Drive svc(Context c) {
-        GoogleAccountCredential cr = GoogleAccountCredential.usingOAuth2(c, Collections.singleton(SCOPE));
-        cr.setSelectedAccount(account(c).getAccount());
-        return new Drive.Builder(new com.google.api.client.http.javanet.NetHttpTransport(), GsonFactory.getDefaultInstance(), cr).setApplicationName("Apav").build();
+    static String token(Context c) throws Exception {
+        return GoogleAuthUtil.getToken(c, account(c).getAccount(), "oauth2:" + SCOPE);
     }
-    static String findId(Drive d) throws Exception {
-        List<com.google.api.services.drive.model.File> f = d.files().list().setSpaces("appDataFolder")
-            .setQ("name='" + FILE + "'").setFields("files(id)").execute().getFiles();
-        return (f == null || f.isEmpty()) ? null : f.get(0).getId();
+    static String send(Request.Builder rb, String tok) throws Exception {
+        try (Response r = PlayScraper.HTTP.newCall(rb.header("Authorization", "Bearer " + tok).build()).execute()) {
+            String body = r.body() != null ? r.body().string() : "";
+            if (!r.isSuccessful()) throw new Exception("Drive error " + r.code() + ": " + body);
+            return body;
+        }
+    }
+    static String findId(String tok) throws Exception {
+        HttpUrl u = HttpUrl.parse(API).newBuilder().addQueryParameter("spaces", "appDataFolder")
+            .addQueryParameter("q", "name='" + FILE + "'").addQueryParameter("fields", "files(id)").build();
+        JSONArray f = new JSONObject(send(new Request.Builder().url(u), tok)).getJSONArray("files");
+        return f.length() == 0 ? null : f.getJSONObject(0).getString("id");
     }
     public static void backup(Context c) throws Exception {
         JSONArray arr = new JSONArray();
@@ -40,22 +47,26 @@ public class DriveHelper {
             arr.put(new JSONObject().put("name", a.name).put("pkg", a.packageName).put("link", a.link)
                 .put("icon", a.iconUrl).put("ver", a.version).put("upd", a.updatedText).put("added", a.addedAt));
         }
-        byte[] data = new JSONObject().put("app", "Apav").put("apps", arr).toString().getBytes("UTF-8");
-        ByteArrayContent content = new ByteArrayContent("application/json", data);
-        Drive d = svc(c);
-        String id = findId(d);
-        if (id != null) d.files().update(id, new com.google.api.services.drive.model.File(), content).execute();
-        else d.files().create(new com.google.api.services.drive.model.File().setName(FILE).setParents(Collections.singletonList("appDataFolder")), content).setFields("id").execute();
+        String data = new JSONObject().put("app", "Apav").put("apps", arr).toString();
+        String tok = token(c);
+        String id = findId(tok);
+        if (id != null) {
+            send(new Request.Builder().url(UPLOAD + "/" + id + "?uploadType=media").patch(RequestBody.create(data, JSON)), tok);
+        } else {
+            String meta = new JSONObject().put("name", FILE).put("parents", new JSONArray().put("appDataFolder")).toString();
+            MultipartBody mb = new MultipartBody.Builder().setType(MediaType.parse("multipart/related"))
+                .addPart(RequestBody.create(meta, JSON)).addPart(RequestBody.create(data, JSON)).build();
+            send(new Request.Builder().url(UPLOAD + "?uploadType=multipart").post(mb), tok);
+        }
         Prefs.sp(c).edit().putLong("last_backup", System.currentTimeMillis()).apply();
     }
-    /** Restore করে কতগুলো নতুন অ্যাপ যোগ হলো তা ফেরত দেয়। -1 = Drive-এ backup নেই */
+    /** কতগুলো নতুন অ্যাপ যোগ হলো তা ফেরত দেয়। -1 = Drive-এ backup নেই */
     public static int restore(Context c) throws Exception {
-        Drive d = svc(c);
-        String id = findId(d);
+        String tok = token(c);
+        String id = findId(tok);
         if (id == null) return -1;
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        d.files().get(id).executeMediaAndDownloadTo(out);
-        JSONArray arr = new JSONObject(out.toString("UTF-8")).getJSONArray("apps");
+        String json = send(new Request.Builder().url(API + "/" + id + "?alt=media"), tok);
+        JSONArray arr = new JSONObject(json).getJSONArray("apps");
         AppDao dao = Db.get(c).dao();
         int n = 0;
         for (int i = 0; i < arr.length(); i++) {
