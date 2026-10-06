@@ -1,0 +1,12 @@
+<resources>
+    <color name="teal">#0B8A87</color>
+    <color name="teal_dark">#065F63</color>
+    <color name="amber">#E39A1B</color>
+    <color name="orange">#C8741A</color>
+    <color name="ink">#1B2B2E</color>
+    <color name="muted">#6B7C80</color>
+    <color name="surface">#F2F8F8</color>
+    <color name="line">#1F0B8A87</color>
+    <color name="glass">#D9FFFFFF</color>
+    <color name="white">#FFFFFF</color>
+</resources>

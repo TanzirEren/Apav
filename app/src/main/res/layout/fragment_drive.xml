@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent" android:layout_height="match_parent" android:gravity="center" android:orientation="vertical" android:padding="28dp" android:paddingBottom="110dp">
+    <ImageView android:layout_width="96dp" android:layout_height="96dp" android:background="@drawable/bg_circle" android:padding="26dp" android:src="@drawable/ic_cloud" app:tint="@color/teal"/>
+    <TextView android:id="@+id/status" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="18dp" android:text="Google Drive" android:textColor="@color/teal_dark" android:textSize="22sp" android:fontFamily="@font/poppins_semibold"/>
+    <TextView android:id="@+id/email" android:layout_width="wrap_content" android:layout_height="wrap_content" android:gravity="center" android:text="Connect to back up your app list" android:textColor="@color/muted" android:textSize="13sp"/>
+    <TextView android:id="@+id/last" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:textColor="@color/amber" android:textSize="12sp"/>
+    <com.google.android.material.button.MaterialButton android:id="@+id/b_connect" android:layout_width="match_parent" android:layout_height="56dp" android:layout_marginTop="26dp" android:text="Connect Google Drive" app:cornerRadius="28dp" app:backgroundTint="@color/teal"/>
+    <com.google.android.material.button.MaterialButton android:id="@+id/b_backup" style="@style/Widget.Material3.Button.TonalButton" android:layout_width="match_parent" android:layout_height="56dp" android:layout_marginTop="10dp" android:text="Backup now" app:cornerRadius="28dp"/>
+    <com.google.android.material.button.MaterialButton android:id="@+id/b_restore" style="@style/Widget.Material3.Button.TonalButton" android:layout_width="match_parent" android:layout_height="56dp" android:layout_marginTop="10dp" android:text="Restore from Drive" app:cornerRadius="28dp"/>
+    <com.google.android.material.button.MaterialButton android:id="@+id/b_out" style="@style/Widget.Material3.Button.TextButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="6dp" android:text="Switch / disconnect account" android:textColor="@color/orange"/>
+</LinearLayout>

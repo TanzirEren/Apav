@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent" android:layout_height="wrap_content" android:background="@drawable/bg_sheet" android:orientation="vertical" android:padding="24dp">
+    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Add app" android:textColor="@color/teal_dark" android:textSize="20sp" android:fontFamily="@font/poppins_semibold"/>
+    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginBottom="14dp" android:text="Paste the Play Store link" android:textColor="@color/muted" android:textSize="12sp"/>
+    <com.google.android.material.textfield.TextInputLayout style="@style/Widget.Material3.TextInputLayout.OutlinedBox" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="App name (optional)" app:boxCornerRadiusBottomEnd="16dp" app:boxCornerRadiusBottomStart="16dp" app:boxCornerRadiusTopEnd="16dp" app:boxCornerRadiusTopStart="16dp">
+        <com.google.android.material.textfield.TextInputEditText android:id="@+id/in_name" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="textCapWords" android:maxLines="1"/>
+    </com.google.android.material.textfield.TextInputLayout>
+    <com.google.android.material.textfield.TextInputLayout style="@style/Widget.Material3.TextInputLayout.OutlinedBox" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:hint="Play Store link" app:boxCornerRadiusBottomEnd="16dp" app:boxCornerRadiusBottomStart="16dp" app:boxCornerRadiusTopEnd="16dp" app:boxCornerRadiusTopStart="16dp">
+        <com.google.android.material.textfield.TextInputEditText android:id="@+id/in_link" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="textUri" android:maxLines="1"/>
+    </com.google.android.material.textfield.TextInputLayout>
+    <com.google.android.material.button.MaterialButton android:id="@+id/btn_add" android:layout_width="match_parent" android:layout_height="56dp" android:layout_marginTop="18dp" android:text="Add &amp; track" app:cornerRadius="28dp" app:backgroundTint="@color/teal"/>
+</LinearLayout>

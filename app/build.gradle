@@ -1,0 +1,49 @@
+plugins { id 'com.android.application' }
+
+def ks = file('release.jks')   // GitHub Action secret থেকে তৈরি হয়
+
+android {
+    namespace 'com.tanzirdev.apav'
+    compileSdk 34
+    defaultConfig {
+        applicationId 'com.tanzirdev.apav'
+        minSdk 26
+        targetSdk 34
+        versionCode 1
+        versionName '1.0.0'
+    }
+    signingConfigs {
+        shared {
+            if (ks.exists()) {
+                storeFile ks
+                storePassword System.getenv('KEYSTORE_PASSWORD')
+                keyAlias System.getenv('KEY_ALIAS')
+                keyPassword System.getenv('KEY_PASSWORD')
+            }
+        }
+    }
+    buildTypes {
+        debug   { if (ks.exists()) signingConfig signingConfigs.shared }
+        release { minifyEnabled false; if (ks.exists()) signingConfig signingConfigs.shared }
+    }
+    compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+    packaging { resources { excludes += ['META-INF/DEPENDENCIES','META-INF/LICENSE*','META-INF/NOTICE*','META-INF/INDEX.LIST','META-INF/*.kotlin_module'] } }
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.11.0'
+    implementation 'androidx.recyclerview:recyclerview:1.3.2'
+    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
+    implementation 'androidx.fragment:fragment:1.6.2'
+    implementation 'androidx.room:room-runtime:2.6.1'
+    annotationProcessor 'androidx.room:room-compiler:2.6.1'
+    implementation 'androidx.work:work-runtime:2.9.0'
+    implementation 'org.jsoup:jsoup:1.17.2'
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+    implementation 'com.github.bumptech.glide:glide:4.16.0'
+    // Google Drive
+    implementation 'com.google.android.gms:play-services-auth:20.7.0'
+    implementation('com.google.api-client:google-api-client-android:2.2.0') { exclude group: 'org.apache.httpcomponents' }
+    implementation('com.google.apis:google-apis-services-drive:v3-rev20230822-2.0.0') { exclude group: 'org.apache.httpcomponents' }
+}
