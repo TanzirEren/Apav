@@ -1,4 +1,4 @@
-name: Build Apav APK
+name: Build Apav APK 
 on:
   push: { branches: [ main ] }
   workflow_dispatch:
